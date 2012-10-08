@@ -18,21 +18,11 @@ module YoreBot
         m.reply "code:   https://github.com/markryall/yore_bot"
       end
 
-      on :private, /^last (\d+) s/ do |m, count|
-        store.retrieve m, count.to_i
-      end
+      on(:private, /^last (\d+) s/) { |m, count| store.retrieve m, count.to_i }
+      on(:private, /^last (\d+) m/) { |m, count| store.retrieve m, count.to_i*60 }
+      on(:private, /^last (\d+) h/) { |m, count| store.retrieve m, count.to_i*60*60 }
 
-      on :private, /^last (\d+) m/ do |m, count|
-        store.retrieve m, count.to_i*60
-      end
-
-      on :private, /^last (\d+) h/ do |m, count|
-        store.retrieve m, count.to_i*60*60
-      end
-
-      on :channel do |m|
-        store.store m
-      end
+      on(:channel) { |m| store.store m }
     end.start
   end
 end
