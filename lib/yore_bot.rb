@@ -1,10 +1,10 @@
 require 'cinch'
+require 'yore_bot/message_store'
 
 module YoreBot
   def execute *args
-    messages = []
-
     Cinch::Bot.new do
+      store = MessageStore.new
       configure do |c|
         c.nick = args.shift
         c.server = args.shift
@@ -12,17 +12,20 @@ module YoreBot
         c.channels = args
       end
 
-      on :private, /^last (\d+)/ do |m, count|
-        seconds = count.to_i * 60
-        now = Time.now.to_i
-        messages.each do |message|
-          elapsed = now - message[0]
-          m.reply "#{message[1]}: #{message[2]} (#{elapsed}s)" if elapsed < seconds
-        end
+      on :private, /^last (\d+) s/ do |m, count|
+        store.retrieve m, count.to_i
+      end
+
+      on :private, /^last (\d+) m/ do |m, count|
+        store.retrieve m, count.to_i*60
+      end
+
+      on :private, /^last (\d+) h/ do |m, count|
+        store.retrieve m, count.to_i*60*60
       end
 
       on :channel do |m|
-        messages << [Time.now.to_i, m.user.nick, m.message]
+        store.store m
       end
     end.start
   end
